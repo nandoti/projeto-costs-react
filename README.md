@@ -1,3 +1,3 @@
 # Projeto Costs em React
 
-## Em desenvolvimento
+## Aplicação falara o controle de gastos de um projeto
