@@ -13,6 +13,7 @@ import styles from "./Projects.module.css";
 function Projects() {
   const [projects, setProjects] = useState([]);
   const [removeLoading, setRemoveLoading] = useState(false);
+  const [projectMessage, setProjectsMessage] = useState('');
 
   useEffect(() => {
     setTimeout(() => {
@@ -31,6 +32,20 @@ function Projects() {
     }, 300);
   }, []);
 
+  function removeProject(id) {
+    fetch(`http://localhost:5000/projects/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then().catch(err => console.log(err))
+      .then(() => {
+        setProjects(projects.filter((project) => project.id !== id))
+        setProjectsMessage('Projeto removido!')
+      })
+    .catch(err => console.log(err))
+  }
+
   const location = useLocation();
 
   let message = "";
@@ -45,6 +60,7 @@ function Projects() {
         <LinkButton to="/newproject" text="Criar Projeto" />
       </div>
       {message && <Message type="success" msg={message} />}
+      {projectMessage && <Message type="success" msg={projectMessage} />}
       <Container custonClass="start">
         {projects.length > 0 &&
           projects.map((project) => (
@@ -54,6 +70,7 @@ function Projects() {
               budget={project.budget}
               category={project.category.name}
               key={project.id}
+              handleRemove={removeProject}
             />
           ))}
         {!removeLoading && <Loading />}
