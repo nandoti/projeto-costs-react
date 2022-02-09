@@ -10,12 +10,12 @@ import Projects from "./compenents/pages/Projects";
 import Container from "./compenents/layout/Container";
 import NavBar from "./compenents/layout/NavBar";
 import Footer from "./compenents/layout/Footer";
+import Project from "./compenents/pages/Project";
 
 function App() {
   return (
     <Router>
       <NavBar />
-
       <Switch>
         <Container customClass="min-height">
           <Route exact path="/">
@@ -27,11 +27,14 @@ function App() {
           <Route path="/company">
             <Company />
           </Route>
+          <Route path="/contact">
+            <Contact />
+          </Route>
           <Route path="/newproject">
             <NewProject />
           </Route>
-          <Route path="/contact">
-            <Contact />
+          <Route path="/project/:id">
+            <Project />
           </Route>
         </Container>
       </Switch>
