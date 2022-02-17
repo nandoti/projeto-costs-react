@@ -1,3 +1,5 @@
+import { parse, v4 as uuidv4 } from "uuid";
+
 import styles from "./Project.module.css";
 
 import { useParams } from "react-router-dom";
@@ -7,6 +9,7 @@ import Loading from "../layout/Loading";
 import Container from "../layout/Container";
 import Message from "../layout/Message";
 import ProjectForm from "../project/ProjectForm";
+import ServiceForm from "../services/ServiceForm";
 
 function Project() {
   const { id } = useParams();
@@ -14,7 +17,7 @@ function Project() {
   const [project, setProject] = useState([]);
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showServiceForm, setShowServiceForm] = useState(false);
-  const [message, setMessagem] = useState();
+  const [message, setMessage] = useState();
   const [type, setType] = useState();
 
   useEffect(() => {
@@ -34,11 +37,11 @@ function Project() {
   }, [id]);
 
   function editPost(project) {
-    setMessagem("");
+    setMessage("");
 
     // budget validation
     if (project.budget < project.cost) {
-      setMessagem("Orçamento menor que o custo do projeto!");
+      setMessage("Orçamento menor que o custo do projeto!");
       setType("error");
       return false;
     }
@@ -53,9 +56,47 @@ function Project() {
       .then((data) => {
         setProject(data);
         setShowProjectForm(false);
-        setMessagem("Alteração realizada!");
+        setMessage("Alteração realizada!");
         setType("success");
         return false;
+      })
+      .catch((err) => console.log(err));
+  }
+
+  function createService(project) {
+    setMessage("");
+    // last service
+    const lastService = project.services[project.services.length - 1];
+
+    lastService.id = uuidv4();
+
+    const lastServiceCost = lastService.cost;
+
+    const newCost = parseFloat(project.cost) + parseFloat(lastServiceCost);
+
+    // maximum value validation
+    if (newCost > parseFloat(project.budget)) {
+      setMessage("Orçamento ultrapassado, verifique o valor do serviço!");
+      setType("error");
+      project.services.pop();
+      return false;
+    }
+
+    //add service cost
+    project.cost = newCost;
+
+    // update project
+    fetch(`http://localhost:5000/projects/${project.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(project),
+    })
+      .then((resp) => resp.json())
+      .then((data) => {
+        // exibir serviços
+        console.log(data);
       })
       .catch((err) => console.log(err));
   }
@@ -107,7 +148,13 @@ function Project() {
                 {!showServiceForm ? "Adicionar Serviço" : "fechar"}
               </button>
               <div className={styles.project_info}>
-                {showServiceForm && <div>formulário do serviço</div>}
+                {showServiceForm && (
+                  <ServiceForm
+                    handleSubmit={createService}
+                    btnText="Adcionar Serviço"
+                    projectData={project}
+                  />
+                )}
               </div>
             </div>
             <h2>Serviços</h2>
